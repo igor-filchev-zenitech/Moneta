@@ -27,32 +27,49 @@ public class MainActivity extends AppCompatActivity {
     public void handleButtonCreate() {
         final Button flipCoinButton = (Button)findViewById(R.id.button2);
         final TextView flipCoinResult = (TextView) findViewById(R.id.textView2);
-        final View imageCoin = (ImageView) findViewById(R.id.imageView3);
+        final ImageView imageCoin = (ImageView) findViewById(R.id.imageView3);
+
+        imageCoin.getLayoutParams().width = 300;
+        imageCoin.getLayoutParams().height = 300;
 
         flipCoinButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final String coinSide = rand.nextInt(2) == 1 ? "skaičius" : "herbas";
-                final String coinFlipText = "Jums iškrito " + coinSide;
+                final SpringAnimation anim = new SpringAnimation(imageCoin, DynamicAnimation.ROTATION_Y, 0f);
 
-                flipCoinResult.setText(coinFlipText);
+                anim.getSpring().setStiffness(SpringForce.STIFFNESS_LOW);
 
-                /*
-                imageCoin.animate().apply {
-                    duration = 2000;
-                    rotationYBy(1800f);
-                    coinImage.isClickable = false
-                }.withEndAction {
-                    imageCoin.setImageResource(R.id.coinImage);
-                    flipCoinResult.setText(coinFlipText);
-                    imageCoin.isClickable = true
-                }.start()
+                anim.addUpdateListener(new DynamicAnimation.OnAnimationUpdateListener() {
+                    // Overriding the method to notify view2 about the change in the view1’s property.
+                    @Override
+                    public void onAnimationUpdate(DynamicAnimation dynamicAnimation, float value,
+                                                  float velocity) {
+                        // set the image to the beginning of the Y axis
+                        imageCoin.setY(50f);
 
+                        // Again starting the animation
+                        anim.animateToFinalPosition(3600f);
+                    }
+                });
 
-                 */
+                anim.addEndListener(new DynamicAnimation.OnAnimationEndListener() {
+                    @Override
+                    public void onAnimationEnd(DynamicAnimation animation1, boolean canceled, float value, float velocity) {
+                        final int randomValue = rand.nextInt(2);
 
+                        final String coinSide = randomValue == 1 ? "skaičius" : "herbas";
+                        final String coinFlipText = "Jums iškrito " + coinSide;
+                        final int finalImage = randomValue == 1
+                                ? R.drawable.__cent_coin_united_states_transparent_png
+                                : R.drawable.us_one_cent_obv;
+
+                        flipCoinResult.setText(coinFlipText);
+                        imageCoin.setImageResource(finalImage);
+                    }
+                });
+
+                anim.start();
             }
         });
-
     }
 }
